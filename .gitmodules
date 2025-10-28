@@ -1,0 +1,3 @@
+[submodule "ez-components"]
+	path = ez-components
+	url = https://github.com/Sora-3e8/ez-components
