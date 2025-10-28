@@ -1,0 +1,74 @@
+#page_title {
+  color: white;
+  display: block;
+  padding: 2vh !important;
+  font-weight: 700;
+  margin-right: auto;
+}
+
+#edit_epicycle {
+  position: fixed;
+  bottom: 10vh;
+  right: 10vh;
+  z-index: 1;
+}
+
+ez-render {
+  width: 100%;
+  height: 93%;
+}
+
+* {
+  overscroll-behavior-y: contain;
+}
+
+/* Icon setup */
+
+#play_toggle[toggled="false"] icon {
+  --ico-src: url("resources/images/play.svg");
+}
+
+#play_toggle[toggled="true"] icon {
+  --ico-src: url("resources/images/pause.svg");
+}
+
+#reset_button icon {
+  --ico-src: url("resources/images/reset.svg");
+}
+
+#recenter_button icon {
+  --ico-src: url("resources/images/recenter.svg");
+}
+
+#settings_button icon {
+  --ico-src: url("resources/images/settings.svg");
+}
+
+/* Icon setup */
+
+/* Extra style setup for icons */
+
+#recenter_button icon {
+  transition-duration: 0.15s;
+  transition-timing-function: linear;
+  transform: scale(1);
+}
+
+
+#settings_button:active icon {
+  transition-duration: 0.4s;
+  transition-timing-function: linear;
+  transform: rotate(360deg);
+}
+
+#reset_button:active icon {
+  transition-duration: 0.15s;
+  transition-timing-function: linear;
+  transform: rotate(360deg);
+}
+
+#recenter_button:active icon {
+  transition-duration: 0.15s;
+  transition-timing-function: linear;
+  transform: scale(0.8);
+}

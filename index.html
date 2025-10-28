@@ -1,0 +1,55 @@
+<html tint="red">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <link rel="stylesheet" href="resources/styles/index.css">
+  <link rel="stylesheet" href="resources/styles/effects.css">
+  <script src="resources/scripts/vector.js"></script>
+  <script src="resources/scripts/epicycle.js"></script>
+  <script src="ez-components/ez-components/components.js"></script>
+  <script src="resources/scripts/index.js"></script>
+  <title>Epicycle</title>
+  
+</head>
+<ez-header>
+  <div class="no_select" id="page_title">Epicycle</div>
+  <ez-toggle id="play_toggle" toggled="false"><icon/></ez-toggle>
+  <ez-btn id="reset_button" onclick="cycle_prog=0;cycle_update();"><icon/></ez-btn>
+  <ez-btn id="recenter_button" onclick="camera.wz=5; camera.x=0; camera.y=0;" ><icon/></ez-btn>
+    <ez-btn id="settings_button" onclick="if(document.location.hash=='#settings'){document.location='#';}else{document.location='#settings';}"><icon/></ez-btn>
+  <ez-schemesw style=" margin:1vh !important;"/>
+</ez-header>
+<body onload="init()">
+  <ez-sidebar style="z-index:3;">
+    <nav id="settings">
+      <ez-list>
+        <ez-item><div>FPS</div><input id="fps_slider" value="60" name="fps_slider" oninput='document.querySelector(`label[for="fps_slider"]`).textContent = this.value;' min="15" step="1" max="180" type="range"></input><label for="fps_slider">60</label></ez-item>
+      </ez-list>
+    </nav>
+    <nav id="epicycle" style="height:93%;">
+
+        <div style="height:50vh;">
+            <ez-list style="height:100%">
+              <ez-item><label>arm1</label>
+                <input type="number" class="no_spinner" style="font-size:var(--font-normal); height:var(--font-normal); margin:0; width:25%;"></input>
+                <input type="number" style="font-size:var(--font-normal); margin:0; width:25%;"></input>
+                    <input type="number" style="font-size:var(--font-normal); margin:0; width:25%;"></input>
+              </ez-item>
+            </ez-list>
+
+        </div>
+
+        <div style="display:flex; align-items: center; justify-content:center;">
+            <ez-btn style="width:50%;">add</ez-btn>
+            <ez-btn style="width:50%;">remove</ez-btn>
+            <ez-btn style="width:25%;">▲</ez-btn>
+            <ez-btn style="width:25%;">▼</ez-btn>
+        </div>
+        <ez-item style="margin-top: auto;"><ez-btn style="width:60%;" onclick="document.location='#';">Done</ez-btn></ez-item>
+
+    </nav>
+  </ez-sidebar>
+  <ez-render></ez-render>
+    <ez-btn id="edit_epicycle" onclick="if(document.location.hash=='#epicycle'){document.location='#';}else{document.location='#epicycle';}"><icon style="--ico-src: url('resources/images/epicycle_edit.svg');"/></ez-btn>
+</body>
+
+

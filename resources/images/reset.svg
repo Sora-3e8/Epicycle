@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="255"
+   height="255"
+   viewBox="0 0 255 255"
+   version="1.1"
+   id="svg1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1">
+    <marker
+       style="overflow:visible"
+       id="Triangle"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       markerWidth="0.5"
+       markerHeight="0.64999998"
+       viewBox="0 0 1 1"
+       preserveAspectRatio="none">
+      <path
+         transform="scale(0.5)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         id="path135" />
+    </marker>
+  </defs>
+  <g
+     id="layer1"
+     transform="matrix(0.26972674,0,0,0.26972674,-8.3864291,-5.2802295)">
+    <path
+       id="path1"
+       style="fill:none;stroke:#000000;stroke-width:110;stroke-linecap:square;stroke-miterlimit:10;stroke-dasharray:none;marker-end:url(#Triangle)"
+       d="M 768.92339,779.89079 C 625.69309,923.12109 395.52382,925.174 254.82593,784.4761 114.12803,643.77821 116.18094,413.60894 259.41124,270.37864 402.64153,127.14835 632.8108,125.09544 773.5087,265.79333" />
+  </g>
+</svg>

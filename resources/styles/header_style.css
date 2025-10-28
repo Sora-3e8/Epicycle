@@ -1,0 +1,33 @@
+header
+{
+  margin:0px;
+  top:0px;
+  z-index: 2;
+}
+
+header nav
+{
+  margin-top:0;
+  top:0px;
+  height:8%;
+  display:flex;
+}
+header nav div
+{
+  font-size:2vh;
+  font-weight:600;
+  line-height:100%;
+  padding: 5px;
+  color: #FFFF;
+  margin:auto;
+  display:flex;
+}
+header nav div label
+{
+  font-size:2vh;
+  font-weight:600;
+  line-height:100%;
+  padding: 5px;
+
+}
+

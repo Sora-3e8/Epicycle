@@ -1,0 +1,557 @@
+function deg_rad(angle)
+{
+    return (math.pi/180)*angle;
+}
+
+function containsOnly(str, set) {
+  return str.split('').every(function(ch) {
+    return set.indexOf(ch) !== -1;
+  });
+}
+
+function containsEmpty(array)
+{
+  for(let i=0; i<array.length;i++)
+  {
+    if(array[i]===""|array[i]=== " "|array[i]===''|array[i]===' ')
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+function countOcc(str, charc) 
+{
+  let occ=0;
+  for(let i=0;i<str.length;i++){ if(str.split('')[i]==charc) { occ=occ+1;} } return occ;
+}
+
+paused=true;
+function passTime()
+{
+
+}
+class scene
+{
+  renderer= null;
+  framerate_ms=16.7; //Holds interval which rerenders screen every framerate_ms 16.7 = 60fps
+  render_interval=null; 
+  objects=[]; //Hold Scene/World entities
+  scale=1; //Makes the view seem as more far
+  scene_coord=new vector2D(0,0); //Makes view move around the world
+  mouse_down=0;
+  mouse_pos=new vector2D(0,0);
+  drag_p0=new vector2D(0,0);
+  paused=true;
+  constructor(canvas,fps)
+  {
+      this.renderer=canvas;
+      this.center_x=this.renderer.offsetWidth/2;
+      this.center_y=this.renderer.offsetHeight/2;
+      //this.scene_coord=new vector2D(this.center_x,this.center_y);
+      this.ctx=canvas.getContext("2d", { willReadFrequently: true });
+      this.ctx.imageSmoothingEnabled = true;
+      this.framerate_ms=(1/fps)*1000;
+      this.ctx.imageSmoothingEnabled = true;
+      this.renderer.addEventListener("mouseleave", (event) => {this.onMouseLeave(event);});
+      this.renderer.addEventListener("wheel",(event) =>this.onWheel(event));
+      this.renderer.addEventListener("mousedown",(event)=>{ this.onMouseDown(event);});
+      this.renderer.addEventListener("mouseup",(event)=>{this.onMouseUp(event);});
+      this.renderer.addEventListener("mousemove", (event) => {this.onMouseMove(event);});
+      this.render_interval=setInterval(()=>{window.requestAnimationFrame(this.render.bind(this));},this.framerate_ms);
+      window.addEventListener("resize", (event) =>{this.onResize(event)});
+      
+  }
+  onResize(event)
+  {
+      console.log("Changed body size!");
+      let old_w = this.renderer.width;
+      let old_h = this.renderer.height;
+      let new_w= document.getElementById("drawingContainer").offsetWidth;
+      let new_h= document.getElementById("drawingContainer").offsetHeight;
+      let delta_pos = new vector2D(new_w/old_w,new_h/old_h);
+      this.renderer.width=new_w;
+      this.renderer.height=new_h;
+      this.center_x=this.center_x*delta_pos.x;
+      this.center_y=this.center_y*delta_pos.y;
+
+      for(let i=0; i<this.objects.length;i++)
+      {
+        this.objects[i].screen_resize(document.getElementById("drawingContainer").offsetWidth,document.getElementById("drawingContainer").offsetHeight);
+        this.objects[i].position=this.objects[i].position.multiply_vector(delta_pos);
+      }
+      this.ctx.reset();
+  }
+
+  //Handles mouse got out of window => reset coords and clear status
+  onMouseLeave(event)
+  {
+    this.mouse_down=0;
+    this.drag_p0=new vector2D(0,0);
+  }
+  //Handles zooming of the scene
+  onWheel(event)
+  {
+    var scroll = event.deltaY < 0 ? 1 : -2; 
+    var factor = Math.exp(scroll * 0.1);
+    this.scale=this.scale*factor;
+    let mx =  this.center_x-this.mouse_pos.x;
+    let my =  this.center_y-this.mouse_pos.y;
+    let nx =( (mx*factor)-mx);
+    let ny =( (my*factor)-my);
+    this.scene_coord = this.scene_coord.add(new vector2D(nx,ny));
+  }
+
+  onMouseDown(event)
+  {
+    this.mouse_down=1;
+    this.drag_p0=new vector2D(event.clientX,event.clientY);
+  }
+
+  onMouseUp(event)
+  {
+      this.mouse_down=0;
+      this.drag_p0=new vector2D(0,0);
+  }
+  drawCrosshair()
+  {
+      this.ctx.beginPath();
+      this.ctx.arc(this.mouse_pos.x, this.mouse_pos.y, 50, 0, 2 * Math.PI);
+      this.ctx.stroke();
+      this.ctx.fillStyle="white";
+      this.ctx.fillText(this.mouse_pos.x+","+this.mouse_pos.y, this.mouse_pos.x, this.mouse_pos.y-10);
+      this.ctx.closePath();
+  }
+  onMouseMove(event)
+  {
+      this.mouse_pos=new vector2D(event.clientX,event.clientY);
+      let touched=false;
+      for(let i=0; i<this.objects.length;i++){ if(this.objects[i].isTouching(this.mouse_pos).touching) { touched=true; } }
+      if(touched){ document.body.style.cursor="pointer";}else{document.body.style.cursor="grab"; }
+           
+      if (this.mouse_down==true){ this.onDrag(event); }
+  }
+  onDrag(event)
+  {
+    let drag_p1=new vector2D(event.clientX,event.clientY);
+    this.scene_coord=this.scene_coord.add(new vector2D( (drag_p1.x-this.drag_p0.x) , (drag_p1.y-this.drag_p0.y) ).multiply_number(this.scale));
+    this.drag_p0=drag_p1;
+  }
+
+  addObject(obj2D)
+  {
+    this.objects.push(obj2D);
+  }
+
+  render()
+  {
+    
+    this.ctx.beginPath();
+    this.ctx.clearRect(0,0,this.renderer.width,this.renderer.height);
+    for(const obj of this.objects ){obj.paused=this.paused; obj.draw();} 
+    this.ctx.closePath();
+    this.ctx.stroke();
+    this.drawCrosshair();
+    
+  }
+}
+
+class epicycle
+{
+  // Stores current state
+  angles=[]; // Stores current angular position of arms structure same as ang_moments
+  vertices=[]; // Stores geometry which will be drawen overwriten
+  trail_buffer=[];
+  selected=null;
+  // Current state end
+  
+  // Render style parameters
+  stroke_style="white";
+  stroke_width=15;
+  // Render par. end
+
+  // Parameters defining position and size of epicycles
+  update_interval=null; // Holds interval calling update()
+  ang_moments=[]; // Defines rate at which arms spin [arm_1_speed,arm_2_speed, ...] units:[RAD]
+  init_angles=[]; // Defines starting offset of arms structure same as units:[RAD]
+  segments=[]; // Length of arms defined as X coordinate rotated by 2D quaternions units:[dimensionless]
+  // Parameters end 
+  
+  // Layers separating parts of epecicycle
+  arm_layer=null;
+  control_layer=null;
+  decor_layer=null;
+  trail_layer=null;
+  // Layers end
+
+  position=new vector2D(0,0); //Center Origin of epicycle
+
+  constructor(scene,position,segments,init_angs,ang_moments)
+  {
+    // Loads initialization variables
+    this.scene = scene; // Links to parent scene
+    this.paused = this.scene.paused
+    this.renderer=this.scene.renderer; // Links to the canvas of the scene
+    this.ctx=this.scene.ctx; // References context of main canvas
+    this.framerate_ms=this.scene.framerate_ms*1000; // Tells how often to update needed to calculate dt[delta time] correctly scales steps => otherwise choppy 
+    this.position=position; // Holds position relative to world
+    this.segments=segments; // Holds lengths of arms
+    this.ang_moments=ang_moments; // Holds angular moment of arms => defines how fast they rotate
+    this.init_angles=init_angs; // Holds initial orientation of arms
+    this.elapsed_angles=Array(this.init_angles.length).fill(0); // Holds delta theta of the arms => How far have they already rotated => Can be used for back stepping
+  
+
+    
+    // Creates layer canvases of the object
+    this.arm_layer=new OffscreenCanvas(this.renderer.width,this.renderer.height); // Arms are drawn here
+    this.decor_layer=new OffscreenCanvas(this.renderer.width,this.renderer.height); // Decoration is drawn here 
+    this.trail_layer=new OffscreenCanvas(this.renderer.width,this.renderer.height); // Trail is drawn here
+    this.arm_lctx=this.arm_layer.getContext("2d",{ alpha: true }, { willReadFrequently: true });
+    this.decor_lctx=this.decor_layer.getContext("2d", { willReadFrequently: true });
+    this.trail_lctx=this.trail_layer.getContext("2d", { willReadFrequently: true });
+    this.trail_lctx.imageSmoothingEnabled = true;
+    this.arm_lctx.imageSmoothingEnabled = true;
+    this.update(); //Loads initial state
+    this.renderer.addEventListener("click",(event)=>{this.onClick(event);});
+    this.renderer.addEventListener("touchstart", (event)=>{this.onClick(event);});
+    this.update_interval=setInterval(() => {if(!this.paused){ this.update();}}, this.scene.framerate_ms); 
+  }
+
+  setSegments(segments_string_in)
+  {
+    let segments_string = segments_string_in.replaceAll("pi",math.pi).replaceAll(" ","").replaceAll("π",math.pi).replaceAll("[","").replaceAll("]","");
+    if(containsOnly(segments_string,[".",",","0","1","1","2","3","4","5","6","7","8","9","+","-","*","/"]) && containsEmpty(segments_string.split(","))==false && countOcc(segments_string,",")+1==(segments_string.split(",").length) && segments_string!=="")
+    {
+      let evaluated=[];
+      //Eval for pi multiples etc..
+      for(let i=0; i<segments_string.split(",").length; i++)
+      {
+        evaluated.push( eval(segments_string.split(",")[i]) );
+      }
+      segments_string=evaluated.join(",");
+      if( segments_string!==this.segments.join(",") )
+      {
+        this.segments=segments_string.split(",");
+
+        if(this.segments.length>this.ang_moments.length)
+        {
+          let df =this.segments.length-this.ang_moments.length;
+          let dl_buffer = Array(df).fill(0);
+          this.init_angles=this.init_angles.concat(dl_buffer);
+          this.ang_moments=this.ang_moments.concat(dl_buffer);
+
+
+          document.getElementById("it_tw_st0").value= "["  + this.init_angles.join(",") + "]";
+          document.getElementById("it_tw_sm").value= "["  + this.ang_moments.join(",") + "]"; 
+        }
+        if(this.segments.length<this.ang_moments.length)
+        {
+          console.log("Trigg!");
+          let df = this.segments.length-this.ang_moments.length;
+          console.log("Negative df: "+df);
+          this.init_angles=this.init_angles.slice(0,df);
+          this.ang_moments=this.ang_moments.slice(0,df);
+          console.log("New init_angles: "+this.ang_moments);
+          console.log("New init_angles: "+this.init_angles);
+          document.getElementById("it_tw_st0").value= "["  + this.init_angles.join(",") + "]";
+          document.getElementById("it_tw_sm").value= "["  + this.ang_moments.join(",") + "]"; 
+        }
+        document.getElementById("it_tw_s").value="["+segments_string+"]";
+        this.reset();
+      }
+      else
+      {
+      let segments_string="["+this.segments.join(",")+"]";
+      document.getElementById("it_tw_s").value=segments_string;
+      }
+
+    }
+    else
+    {
+      let segments_string="["+this.segments.join(",")+"]";
+      document.getElementById("it_tw_s").value=segments_string;
+    }
+  }
+
+  setInitAngles(angles_in)
+  {
+    let angles_string = angles_in.replaceAll("pi",math.pi).replaceAll(" ","").replaceAll("π",math.pi).replaceAll("[","").replaceAll("]","");
+    console.log("Pre process: "+angles_string);
+    if(containsOnly(angles_string,[".",",","0","1","1","2","3","4","5","6","7","8","9","+","-","*","/"]) && containsEmpty(angles_string.split(","))==false && countOcc(angles_string,",")+1==(angles_string.split(",").length) && angles_string!=="" && angles_string.split(",").length==this.segments.length)
+    {
+      let evaluated=[];
+      //Eval for pi multiples etc..
+      for(let i=0; i<angles_string.split(",").length; i++)
+      {
+        evaluated.push( eval(angles_string.split(",")[i]) );
+      }
+      angles_string=evaluated.join(",");
+      console.log(angles_string);
+      
+      if(angles_string!==this.init_angles.join(","))
+      {
+        this.init_angles=angles_string.split(",");
+        document.getElementById("it_tw_st0").value=angles_string;
+        this.reset();
+      }
+      else
+      {
+        console.log("Dropped out");
+        let angles_string="["+this.init_angles.join(",")+"]";
+        document.getElementById("it_tw_st0").value=angles_string;
+      }
+
+    }
+    else
+    {
+      console.log("Dropped out");
+      let angles_string="["+this.init_angles.join(",")+"]";
+      document.getElementById("it_tw_st0").value=angles_string;
+
+    }
+  }
+
+  setMoments(moments_in)
+  {
+    let moments_string = moments_in.replaceAll("pi",math.pi).replaceAll(" ","").replaceAll("π",math.pi).replaceAll("[","").replaceAll("]","");
+    if(containsOnly(moments_string,[".",",","0","1","1","2","3","4","5","6","7","8","9","+","-","*","/"]) && containsEmpty(moments_string.split(","))==false && countOcc(moments_string,",")+1==(moments_string.split(",").length) && moments_string!=="" && moments_string.split(",").length==this.segments.length)
+    {
+      let evaluated=[];
+      //Eval for pi multiples etc..
+      for(let i=0; i<moments_string.split(",").length; i++)
+      {
+        evaluated.push( eval(moments_string.split(",")[i]) );
+      }
+      moments_string=evaluated.join(",");
+      
+      if(moments_string!==this.ang_moments.join(","))
+      {
+        this.ang_moments=moments_string.split(",");
+        this.reset();
+      }
+      else
+      {
+        console.log("Dropped out");
+        let moments_string="["+this.ang_moments.join(",")+"]";
+        document.getElementById("it_tw_sm").value=moments_string;;
+      }
+    }
+    else
+    {
+      console.log("Dropped out");
+      let moments_string="["+this.ang_moments.join(",")+"]";
+      document.getElementById("it_tw_sm").value=moments_string;
+
+    }
+  }
+
+  
+  screen_resize(width,height)
+  {
+    this.arm_layer=new OffscreenCanvas(width,height);
+    this.decor_layer=new OffscreenCanvas(width,height);
+    this.trail_layer=new OffscreenCanvas(width,height);
+    this.arm_lctx=this.arm_layer.getContext("2d",{ alpha: true });
+    this.decor_lctx=this.decor_layer.getContext("2d");
+    this.trail_lctx=this.trail_layer.getContext("2d");
+  }
+
+  update()
+  { 
+    this.vertices=[]; // Clearing vertices for redraw
+    this.vertices.push(new vector2D(0,0)); // Adding 0th vertex as origin
+    var last_seg= new vector2D(0,0); // Adding last segment buffer
+
+    for(let i=0; i<this.segments.length;i++)
+    { 
+      let init_ang=this.init_angles[i]; // Current arm's initial angle
+      let ang_elapsed=this.elapsed_angles[i]; // Current arm's elapsed distance
+      let ang_moment = this.ang_moments[i]*(this.scene.framerate_ms/1000); // Current arm's moment multiplies it by dt[delta time]
+      let seg = this.segments[i]; // Unrotated current arm's segment
+      
+      // Prevents angle overflow
+      if(math.abs(ang_elapsed)>=(math.pi*2) ){let rev_over=math.abs(ang_elapsed)-(math.pi*2); let dir=math.ang_elapsed/math.abs(ang_elapsed);  this.elapsed_angles[i]=rev_over*dir;}
+
+      let segment=new vector2D(seg,0).rotate(init_ang);
+      segment=segment.rotate(ang_elapsed); // Creates rotated segment
+      last_seg = last_seg.add(segment); // Adds up vector positions of segments
+      this.vertices.push(last_seg); // Pushes into drawing vertex buffer
+      this.elapsed_angles[i]=ang_elapsed+(ang_moment); // Stores ellapsed distance
+    }
+  }
+  
+ onClick(event)
+  {
+      let mouse_vec = new vector2D(event.clientX,event.clientY);
+      this.selected=this.isTouching(mouse_vec).id;
+      console.log("Clack Uwu:"+this.selected);
+  }
+
+
+  isTouching(p3)
+  {
+    let touched=false;
+    let where=[];
+    if(this.arms_rpos && this.arms_rpos.length>0)
+    {
+    for(let i=0; i<this.vertices.length-1; i++)
+    {
+      let p1 =this.arms_rpos[i];
+      let p2 =this.arms_rpos[i+1];
+
+      let line12=p2.substract(p1);
+
+      let line13=p3.substract(p1);
+ 
+      if(line13.length()<=line12.length())
+      {
+        if(math.abs(math.atan2(line13.y,line13.x)-math.atan2(line12.y,line12.x))<0.15)
+        {
+          touched=true;
+          let dist = line13.length;
+          where.push({d:dist,id:i});
+          
+        }
+        if(touched==true)
+        {
+          where.sort((a,b)=> a.d - b.d);
+          return {touching:true,id:where[0].id};
+        }
+      }
+      
+    }
+    }
+    return {touching:false,id:null};
+  } 
+  draw_trail()
+  { 
+    let total_points=0;
+    let len_tot=0;
+    let moment_tot=0;
+
+ 
+    this.trail_lctx.clearRect(0,0,this.renderer.width,this.renderer.height);
+    if (this.trail_buffer.length==0||math.abs(this.trail_buffer.at(-1).substract(this.vertices.at(-1)).length())>0 )
+    { 
+     
+             
+      if(this.trail_buffer.length< 10000)
+      {
+        this.trail_buffer.push(this.vertices.at(-1));
+      }
+    }
+
+    //else {this.trail_buffer=this.trail_buffer.slice(total_points/2,this.trail_buffer.length-1);} 
+
+    this.trail_lctx.strokeStyle="red";
+    this.trail_lctx.lineWidth=2*this.scene.scale;
+    this.trail_lctx.beginPath();
+    for(let i=0; i<this.trail_buffer.length-1; i++)
+    {
+      
+      let vertex=this.trail_buffer[i].multiply_number(this.scene.scale);
+      let nvertex=this.scene.scene_coord.add(this.position.add(vertex));
+      if (i > 0) 
+      {
+      let vertex0=this.trail_buffer[i-1].multiply_number(this.scene.scale);
+      let nvertex0=this.scene.scene_coord.add(this.position.add(vertex0));
+      // draw line to previous point
+
+      this.trail_lctx.moveTo(nvertex.x, nvertex.y);
+      this.trail_lctx.lineTo(nvertex0.x, nvertex0.y);
+      }
+    }
+
+
+    this.trail_lctx.stroke();
+    this.trail_lctx.closePath();
+    this.ctx.drawImage(this.trail_layer,0,0); 
+  }
+  reset()
+  {
+    this.trail_lctx.closePath();
+    this.trail_lctx.reset();
+    this.elapsed_angles=Array(this.init_angles.length).fill(0);
+    this.vertices=[];
+    this.trail_buffer=[];
+    this.update()
+  }
+
+  draw_arms()
+  {
+    this.arm_lctx.clearRect(0,0,this.renderer.width,this.renderer.height); 
+    this.arm_lctx.lineCap = "round";
+    this.arm_lctx.lineJoin = "round";
+    this.arm_lctx.strokeStyle="#FFF";
+    this.arm_lctx.lineWidth=5*this.scene.scale;
+    this.arm_lctx.beginPath();
+    this.arms_rpos=[];
+    for(let i=0; i<this.vertices.length;i++)
+    {
+      let vertex=this.vertices[i].multiply_number(this.scene.scale);
+      let nvertex=this.scene.scene_coord.add( this.position.add(vertex) );
+      //nvertex=this.scene.scene_coord.add(nvertex);
+      if(i==0){this.arm_lctx.moveTo(nvertex.x,nvertex.y); }
+      else
+      {
+          this.arm_lctx.lineTo(nvertex.x,nvertex.y);
+          this.arm_lctx.closePath(); 
+          this.arm_lctx.moveTo(nvertex.x,nvertex.y);
+      }
+      this.arms_rpos.push(nvertex);
+    }
+    this.arm_lctx.stroke();
+
+
+    this.ctx.drawImage(this.arm_layer,0,0)
+  }
+
+  draw()
+  {
+    this.draw_trail();
+    this.draw_arms();
+    
+  }
+
+   setPos(vector)
+  {
+    this.position=vector;
+  }
+
+}
+
+var MyScene1;
+
+var ctx;
+var anim;
+function renderer_init()
+{
+  
+  var renderBox=document.getElementById("drawingBox");
+  renderBox.width=document.getElementById("drawingContainer").offsetWidth;
+  renderBox.height=document.getElementById("drawingContainer").offsetHeight;
+  
+  
+  MyScene1=new scene(renderBox,144);  
+  let myobject=new epicycle(MyScene1,new vector2D(MyScene1.center_x,MyScene1.center_y),
+ [50,25,25],[0,0,0],[10,20,-5]);
+  MyScene1.addObject(myobject);
+
+  let fps_slider = document.getElementById("fps_slider");
+  fps_slider.addEventListener("change",(event)=>
+    {
+      MyScene1.framerate_ms=(1/fps_slider.value)*1000;
+      event.preventDefault();
+      event.stopPropagation();
+
+    });
+
+  document.getElementById("it_tw_s").addEventListener("focusout",(event)=>{myobject.setSegments(event.target.value);});
+  document.getElementById("it_tw_st0").addEventListener("focusout",(event)=>{myobject.setInitAngles(event.target.value);});
+  document.getElementById("it_tw_sm").addEventListener("focusout",(event)=>{myobject.setMoments(event.target.value);});
+  document.getElementById("it_tw_s").value="["+myobject.segments.join(",")+"]";
+  document.getElementById("it_tw_st0").value="["+myobject.init_angles.join(",")+"]";
+  document.getElementById("it_tw_sm").value="["+myobject.ang_moments.join(",")+"]";
+
+}
