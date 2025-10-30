@@ -23,28 +23,32 @@
     <nav id="settings">
       <ez-list>
         <ez-item><div>FPS</div><input id="fps_slider" value="60" name="fps_slider" oninput='document.querySelector(`label[for="fps_slider"]`).textContent = this.value;' min="15" step="1" max="180" type="range"></input><label for="fps_slider">60</label></ez-item>
+        <ez-item><div onclick="console.log('hello');">Draw trail</div><input style="position:absolute; right:var(--padding-normal);" type="checkbox"></input></ez-item>
+        <ez-item><div>Trail predict</div><input style="position:absolute; right:var(--padding-normal);" type="checkbox"></input></ez-item>
       </ez-list>
     </nav>
     <nav id="epicycle" style="height:93%;">
 
         <div style="height:50vh;">
-            <ez-list style="height:100%">
-              <ez-item><label>arm1</label>
-                <input type="number" class="no_spinner" style="font-size:var(--font-normal); height:var(--font-normal); margin:0; width:25%;"></input>
-                <input type="number" style="font-size:var(--font-normal); margin:0; width:25%;"></input>
-                    <input type="number" style="font-size:var(--font-normal); margin:0; width:25%;"></input>
+            <ez-list selectable="true" style="height:100%">
+              <ez-item>
+              <div>arm1</div>
+              <input type="number" class="no_spinner"/>
+              <input type="number" class="no_spinner"/>
+              <input type="number" class="no_spinner"/>
               </ez-item>
             </ez-list>
-
         </div>
 
         <div style="display:flex; align-items: center; justify-content:center;">
             <ez-btn style="width:50%;">add</ez-btn>
             <ez-btn style="width:50%;">remove</ez-btn>
-            <ez-btn style="width:25%;">▲</ez-btn>
-            <ez-btn style="width:25%;">▼</ez-btn>
+            <ez-btn style="width:25%;">&uarr;</ez-btn>
+            <ez-btn style="width:25%;">&darr;</ez-btn>
         </div>
-        <ez-item style="margin-top: auto;"><ez-btn style="width:60%;" onclick="document.location='#';">Done</ez-btn></ez-item>
+         <div style="display:flex; align-items: center; justify-content:center;">
+           <ez-btn style="width:60%;" onclick="document.location='#';">Done</ez-btn>
+         </div>
 
     </nav>
   </ez-sidebar>
