@@ -1,16 +1,16 @@
-class Arm
+class Epicycle_fx
 {
-  angle = 0;
+  phase = 0;
   revolutions = 0;
   length = 0;
   origin_point = new vector2D(0,0);
   end_point = new vector2D(0,0);
 
-  constructor(length,revolutions,angle=0,units=Ang.rad)
+  constructor(amplitude,frequency,phase=0,units=Ang.rad)
   {
-    this.length = length;
-    this.revolutions = revolutions;
-    this.angle = angle;
+    this.amplitude = amplitude;
+    this.frequency = frequency;
+    this.phase = phase;
   }
 
   calculate_state(origin_point,steps)

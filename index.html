@@ -19,38 +19,48 @@
   <ez-schemesw style=" margin:1vh !important;"/>
 </ez-header>
 <body onload="init()">
-  <ez-sidebar style="z-index:3;">
-    <nav id="settings">
-      <ez-list>
-        <ez-item><div>FPS</div><input id="fps_slider" value="60" name="fps_slider" oninput='document.querySelector(`label[for="fps_slider"]`).textContent = this.value;' min="15" step="1" max="180" type="range"></input><label for="fps_slider">60</label></ez-item>
-        <ez-item><div onclick="console.log('hello');">Draw trail</div><input style="position:absolute; right:var(--padding-normal);" type="checkbox"></input></ez-item>
-        <ez-item><div>Trail predict</div><input style="position:absolute; right:var(--padding-normal);" type="checkbox"></input></ez-item>
-      </ez-list>
-    </nav>
-    <nav id="epicycle" style="height:93%;">
+  <ez-sidebar style="z-index:3; height:100%;">
 
-        <div style="height:50vh;">
-            <ez-list selectable="true" style="height:100%">
-              <ez-item>
-              <div>arm1</div>
-              <input type="number" class="no_spinner"/>
-              <input type="number" class="no_spinner"/>
-              <input type="number" class="no_spinner"/>
-              </ez-item>
-            </ez-list>
-        </div>
+  <nav id="settings">
 
-        <div style="display:flex; align-items: center; justify-content:center;">
-            <ez-btn style="width:50%;">add</ez-btn>
-            <ez-btn style="width:50%;">remove</ez-btn>
-            <ez-btn style="width:25%;">&uarr;</ez-btn>
-            <ez-btn style="width:25%;">&darr;</ez-btn>
-        </div>
-         <div style="display:flex; align-items: center; justify-content:center;">
-           <ez-btn style="width:60%;" onclick="document.location='#';">Done</ez-btn>
-         </div>
+  <ez-list>
+    <ez-item><div>FPS</div><input id="fps_slider" value="60" name="fps_slider" oninput='document.querySelector(`label[for="fps_slider"]`).textContent = this.value;' min="15" step="1" max="180" type="range"></input><label for="fps_slider">60</label></ez-item>
+    <ez-item onclick="if(event.target==this){this.querySelector('input').click();}"><div>Draw trail</div><input style="position:absolute; right:var(--padding-normal);" id="trail_checkbox" type="checkbox"/></ez-item>
+    <ez-item onclick="if(event.target==this){this.querySelector('input').click();}"><div>Trail predict</div><input style="position:absolute; right:var(--padding-normal);" id="trail_checkbox" type="checkbox"/></ez-item>
+  </ez-list>
 
-    </nav>
+  </nav>
+
+  <nav id="epicycle" style="height:100%;">    
+  <ez-list id="fx_list" selectable="true" style="height:30%; overflow-y:scroll;">
+    <ez-item><label>fx:1</label><input type="number"/><input type="number"/><input type="number"/></ez-item>
+    <ez-item><label>fx:2</label><input type="number"/><input type="number"/><input type="number"/></ez-item>
+   <ez-item><label>fx:3</label><input type="number"/><input type="number"/><input type="number"/></ez-item>
+   <ez-item><label>fx:4</label><input type="number"/><input type="number"/><input type="number"/></ez-item>
+   <ez-item><label>fx:5</label><input type="number"/><input type="number"/><input type="number"/></ez-item>
+   <ez-item><label>fx:6</label><input type="number"/><input type="number"/><input type="number"/></ez-item>
+  <ez-item><label>fx:7</label><input type="number"/><input type="number"/><input type="number"/></ez-item>
+   <ez-item><label>fx:8</label><input type="number"/><input type="number"/><input type="number"/></ez-item>
+   <ez-item><label>fx:9</label><input type="number"/><input type="number"/><input type="number"/></ez-item>
+   <ez-item><label>fx:10</label><input type="number"/><input type="number"/><input type="number"/></ez-item>
+
+
+  </ez-list>
+
+  <ez-item id="fxlist_controls" style="filter:brightness(100%)!important; margin-top:5px;">
+    <ez-btn style="width:50%;">add</ez-btn>
+    <ez-btn style="width:50%;">remove</ez-btn>
+    <ez-btn onclick="document.getElementById('fx_list').selected_up();" style="width:25%;">&uarr;</ez-btn>
+    <ez-btn onclick="document.getElementById('fx_list').selected_down();" style="width:25%;">&darr;</ez-btn>
+  </ez-item>
+  <div style="position:absolute; width:100%; bottom:8%;">
+  <ez-item style="background:none;"><ez-btn style="width:60%;" onclick="document.location='#';">Done</ez-btn></ez-item>
+  </div>
+  </nav>
+
+
+
+
   </ez-sidebar>
   <ez-render></ez-render>
     <ez-btn id="edit_epicycle" onclick="if(document.location.hash=='#epicycle'){document.location='#';}else{document.location='#epicycle';}"><icon style="--ico-src: url('resources/images/epicycle_edit.svg');"/></ez-btn>

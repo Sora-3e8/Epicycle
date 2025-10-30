@@ -1,3 +1,7 @@
+:root {
+  --ezitemPadding: 10px !important;
+}
+
 #page_title {
   color: white;
   display: block;
@@ -7,15 +11,27 @@
 }
 
 #edit_epicycle {
-  position: fixed;
+  position: absolute;
   bottom: 10vh;
   right: 10vh;
   z-index: 1;
 }
 
+#fxlist_controls ez-btn {
+  background-color: lightseagreen;
+}
+
 ez-render {
   width: 100%;
   height: 93%;
+}
+
+#fx_list input[type="number"] {
+  text-align: center;
+}
+
+#fx_list ez-item input {
+  margin: 2px !important;
 }
 
 * {
