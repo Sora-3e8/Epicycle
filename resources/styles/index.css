@@ -17,9 +17,7 @@
   z-index: 1;
 }
 
-#fxlist_controls ez-btn {
-  background-color: lightseagreen;
-}
+#fxlist_controls ez-btn {}
 
 ez-render {
   width: 100%;
@@ -29,6 +27,11 @@ ez-render {
 #fx_list input[type="number"] {
   text-align: center;
 }
+
+#fx_list input[type="text"] {
+  text-align: center;
+}
+
 
 #fx_list ez-item input {
   margin: 2px !important;

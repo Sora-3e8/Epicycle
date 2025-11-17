@@ -4,6 +4,7 @@
   <link rel="stylesheet" href="resources/styles/index.css">
   <link rel="stylesheet" href="resources/styles/effects.css">
   <script src="resources/scripts/vector.js"></script>
+  <script src="resources/scripts/extra_math.js"></script>
   <script src="resources/scripts/epicycle.js"></script>
   <script src="ez-components/ez-components/components.js"></script>
   <script src="resources/scripts/index.js"></script>
@@ -31,30 +32,35 @@
 
   </nav>
 
-  <nav id="epicycle" style="height:100%;">    
+  <nav id="epicycle" style="height:100%;">  
+    <ez-item style="filter:brightness(95%)!important;">
+          <div style="width:25%;">id</div>
+          <div style="width:25%;">amp</div>
+          <div style="width:25%;">freq</div>
+          <div style="width:25%;">phase</div>
+    </ez-item>
+
+
+
   <ez-list id="fx_list" selectable="true" style="height:30%; overflow-y:scroll;">
-    <ez-item><label>fx:1</label><input type="number"/><input type="number"/><input type="number"/></ez-item>
-    <ez-item><label>fx:2</label><input type="number"/><input type="number"/><input type="number"/></ez-item>
-   <ez-item><label>fx:3</label><input type="number"/><input type="number"/><input type="number"/></ez-item>
-   <ez-item><label>fx:4</label><input type="number"/><input type="number"/><input type="number"/></ez-item>
-   <ez-item><label>fx:5</label><input type="number"/><input type="number"/><input type="number"/></ez-item>
-   <ez-item><label>fx:6</label><input type="number"/><input type="number"/><input type="number"/></ez-item>
-  <ez-item><label>fx:7</label><input type="number"/><input type="number"/><input type="number"/></ez-item>
-   <ez-item><label>fx:8</label><input type="number"/><input type="number"/><input type="number"/></ez-item>
-   <ez-item><label>fx:9</label><input type="number"/><input type="number"/><input type="number"/></ez-item>
-   <ez-item><label>fx:10</label><input type="number"/><input type="number"/><input type="number"/></ez-item>
+
+  <ez-item><label>fx:1</label><input type="text" value="1.0"/><input type="text" value="1.0"/><input type="text" value="0.0"/></ez-item>
+  <ez-item><label>fx:2</label><input type="text" value="1.0"/><input type="text" value="1/2"/><input type="text" value="0.0"/></ez-item>
 
 
   </ez-list>
 
   <ez-item id="fxlist_controls" style="filter:brightness(100%)!important; margin-top:5px;">
-    <ez-btn style="width:50%;">add</ez-btn>
-    <ez-btn style="width:50%;">remove</ez-btn>
+    <ez-btn onclick="add_fx();" style="width:50%;">add</ez-btn>
+    <ez-btn onclick="rm_fx();" style="width:50%;">remove</ez-btn>
     <ez-btn onclick="document.getElementById('fx_list').selected_up();" style="width:25%;">&uarr;</ez-btn>
     <ez-btn onclick="document.getElementById('fx_list').selected_down();" style="width:25%;">&darr;</ez-btn>
   </ez-item>
   <div style="position:absolute; width:100%; bottom:8%;">
-  <ez-item style="background:none;"><ez-btn style="width:60%;" onclick="document.location='#';">Done</ez-btn></ez-item>
+  <ez-item style="background:none; filter:brightness(100%)!important; margin:0!important;">
+    <ez-btn style="width:40%;" onclick="apply_fxs();">Apply</ez-btn><ez-btn style="width:40%;" onclick="document.location='#';">Done</ez-btn>
+
+  </ez-item>
   </div>
   </nav>
 

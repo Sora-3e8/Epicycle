@@ -1,129 +1,131 @@
-class Epicycle_fx
-{
-  phase = 0;
-  revolutions = 0;
-  length = 0;
-  origin_point = new vector2D(0,0);
-  end_point = new vector2D(0,0);
 
-  constructor(amplitude,frequency,phase=0,units=Ang.rad)
+class euler_fx
+{
+  amplitude = 0;
+  frequency = 0;
+  phase = 0;
+
+  constructor(amplitude,frequency,phase=0)
   {
     this.amplitude = amplitude;
     this.frequency = frequency;
     this.phase = phase;
   }
-
-  calculate_state(origin_point,steps)
-  {
-    this.origin_point = origin_point;
-let rotated_vector = new vector2D(0,this.length).rotate(this.angle+(this.revolutions*steps))
-    this.end_point=origin_point.add(rotated_vector);
+  // Makes mat of shape {x,y,z,w} × {rotation matrix} and removes w as it was needed just match the shape of rot matrix
+  get_state(t)
+  { //
+    return new Mat(new Mat([0,this.amplitude,0,0],4).multiply(Mutils.Rotate(0,0, (this.phase+(math.pi/2))+(t*this.frequency) ) ,true).cells.slice(0,-1),3);
   }
+
 }
 
-// Usage Epicycle(Center<Vector2D>)
-class Epicycle
+
+
+class FourierSeries
 {
-  resolution = 3;
-  evaulated_period = 0;
-  Arms=[];
-  Center = [];
-  Period = 0.0;
-  period_needs_update = true;
-  trail_buffer=[];
-  Progress = 0;
-  trail_partial=[];
+  sampling_rate = 100;
+  tail_buffer = [];
+  fx_array = [];
+  fxs_buffers = [];
+  point_buffer = [];
+  precision = 3;
+  constructor(){
 
-  constructor(center=new vector2D(0,0))
-  {
-    this.Center = center;
-    //this.dpr = window.devicePixelRatio;
-  }
-  // Do not under any cicumstance use more than pow(10,2) => It will start to freak out
-  eval_period()
-  {
-    let periods = [];
-    let speeds = [];
-    this.period_needs_update = false;
-    for(let k=0; k<this.Arms.length; k++)
-    {
-      speeds.push(Math.round(this.Arms[k].revolutions*Math.pow(10,this.resolution)));
-    }
-    let gcd_res = math.gcd.apply(this,speeds);
-    this.evaluated_period = (2*Math.PI)/(gcd_res/math.pow(10,this.resolution));
-    
   }
 
-  calc_trail(trail_start=0,trail_end=100)
+  eval_cperiod()
   {
-    this.trail_buffer=[];
+    let freqs = [];
+
     
-    
-    //for(let p=trail_start; p<Math.max(trail_end,100)*Math.pow(10,this.resolution)-3;p+=3)
-    //{
-     //this.trail_buffer.push(this.calculate_state(p/Math.pow(10,this.resolution)).slice(-1)[0]);
-    //}
-    
-    console.log("Trail end:",(100/(1/Math.pow(10,this.resolution))));
-    let scaled_step = Math.pow(10,this.resolution);
-    for(let p=0; p<(100*scaled_step)-10;p+=10)
+    for(let k=0; k<this.fx_array.length; k++)
     {
-      this.trail_buffer.push(this.calculate_state(p/scaled_step).slice(-1));
+      let fx = this.fx_array[k];
+      // Abs strips negative values, there's no such thing like negative frequency
+      freqs.push( Math.abs(fx.frequency) );
     }
 
-    if (trail_end == 100){this.trail_buffer.push(this.trail_buffer[0]);} 
-    console.log("Recalculating trail...");
-    return this.trail_buffer;
+    // Removes duplicate values
+    let unique_freqs = Array.from( new Set(freqs) );
+
+    // Reverse sort
+    unique_freqs = unique_freqs.sort((a, b) => b - a);
+
+    for(let k = 0; k<unique_freqs.length; k++){ unique_freqs[k] = Math.round(Math.pow(10,this.precision)*(1/unique_freqs[k]))/Math.pow(10,this.precision); }
+
+    return 2*math.pi*arr_lcm(unique_freqs);
   }
 
-  edit_arm(index,att,val)
+  precalc()
   {
-    this.Arms[index].setAttr(att,val);
-    this.period_needs_update = true;
-  }
-
-  add_arm(length,speed,initial_pos)
-  {
-    this.Arms.push(new Arm(length,speed,initial_pos));
-    this.period_needs_update = true;
-  }
-
-  remove_arm(index)
-  {
-    this.Arms.splice(index,1);
-    this.period_needs_update = true;
-  }
-
-  trail_segment(progress,start=0)
-  {
-    let start_index = Math.round( (this.trail_buffer.length/100)*Math.min(100,start) );
-    let trail_index = Math.round( (this.trail_buffer.length/100)*Math.min(100,progress) );
-
-    return this.trail_buffer.slice(start_index,trail_index).flat();
-  }
-
-  // Evaluates single state of the epicycle
-  calculate_state(progress)
-  {
-    let point_list = [];
-    // Updates period if needed and precalculates trail
-    if(this.period_needs_update == true)
+    let common_period = this.eval_cperiod();
+    alert(`End: ${common_period}`);
+    let new_fx_buffers = [];
+    let new_point_buffer = [];
+    let new_tail_buffer = [];
+    for(let t = 0; t<(common_period*this.sampling_rate); t++ )
     {
-      this.eval_period();
-      this.calc_trail(0,100);
-    }
-    // This part clamps the progress to be between 0-100
-    if(progress>100){progress =  progress - ((dec_div(progress,100)*100));}
-    let origin_point = this.Center;
-    let current_location = (this.evaluated_period/100)*progress    
+      let time_frame=[];
+      let points = [[0,0,0]];
+      let fx_buffer = [];
+      let stack_mat = new Mat([0,0,0],3);
+      for(let k = 0; k<this.fx_array.length; k++)
+      {
+        let fx_point = this.fx_array[k].get_state(t/this.sampling_rate);
+        fx_buffer.push(fx_point.cells);
+        
+        stack_mat = stack_mat.add(fx_point);
+        points.push(stack_mat.cells);
+      }
 
-    for(let arm_index = 0; arm_index<this.Arms.length; arm_index++ )
-    {
-      this.Arms[arm_index].calculate_state(origin_point,current_location);
-      point_list.push([this.Arms[arm_index].origin_point.x,this.Arms[arm_index].origin_point.y,0]);
-      origin_point = this.Arms[arm_index].end_point;
-      point_list.push([this.Arms[arm_index].end_point.x,this.Arms[arm_index].end_point.y,0]);
+      new_fx_buffers.push(fx_buffer);
+      new_point_buffer.push(points);
+      new_tail_buffer.push(stack_mat.cells);
     }
-    return point_list;
+    new_point_buffer.push(new_point_buffer[0]);
+    new_fx_buffers.push(new_fx_buffers[0]);
+    new_tail_buffer.push(new_tail_buffer[0]);
+    this.point_buffer = new_point_buffer;
+    this.fxs_buffers = new_fx_buffers;
+    this.tail_buffer = new_tail_buffer;
+  }
+
+  eval_state(percent)
+  {
+    let common_period = this.eval_cperiod();
+    let time_frame=[];
+    let points = [[0,0,0]];
+    let fx_buffer = [];
+    let stack_mat = new Mat([0,0,0],3);
+    let t = (common_period/100)*percent;
+    for(let k = 0; k<this.fx_array.length; k++)
+    {
+      let fx_point = this.fx_array[k].get_state((t/this.sampling_rate));
+      fx_buffer.push(fx_point.cells);
+      
+      stack_mat = stack_mat.add(fx_point);
+      points.push(stack_mat.cells);
+    }
+    new_fx_buffers.push(fx_buffer);
+    new_point_buffer.push(points);
+    new_tail_buffer.push(stack_mat.cells);
+  }
+
+  tail_segment(progress,start=0)
+  {
+    let start_index = Math.round( (this.tail_buffer.length/100)*Math.min(100,start) );
+    let trail_index = Math.round( (this.tail_buffer.length/100)*Math.min(100,progress) );
+    return this.tail_buffer.slice(start_index,trail_index);
+  }
+
+  // prc should be a float in range of 0 - 100 % - do not include percentage symbol [float]
+  get_state(percent)
+  {
+   let prc = percent;
+   if(prc>100){prc=prc-( Math.trunc( prc/100 )*100 );}
+   let pos = Math.trunc( ( ( this.point_buffer.length-1) / 100 ) * prc );
+   console.log("Curr pos:",pos);
+   return this.point_buffer[pos];
   }
 }
+
