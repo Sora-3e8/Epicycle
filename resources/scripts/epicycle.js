@@ -46,10 +46,11 @@ class FourierSeries
     }
 
     // Removes duplicate values
-    let unique_freqs = Array.from( new Set(freqs) );
+    let unique_freqs = new Set(freqs);
     
     // Strips zeros to prevent infinities - As zero does not affect path length it just adds static offset
     unique_freqs.delete(0); 
+    unique_freqs = Array.from(unique_freqs);
 
     // Reverse sort
     unique_freqs = unique_freqs.sort((a, b) => b - a);
