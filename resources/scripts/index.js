@@ -16,6 +16,7 @@ function init_scene()
   renderer = document.querySelector("ez-render");
   play_btn = document.querySelector("ez-toggle");
 
+
   renderer.camcontrols["rotate"]="never";
   renderer.camcontrols["pan_move"]="lmb";
   scene = renderer.Scene;
@@ -25,7 +26,6 @@ function init_scene()
   camera.projection_type = GlCamProjType.orthogonal;
   camera.wz = 5;
   camera.mspeed=0.01;
-  
   renderer.set_fps(60);
 }
 
